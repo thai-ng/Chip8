@@ -2,14 +2,15 @@
 #include <type_traits>
 #include <variant>
 
+#include "PrimitiveTypes.h"
+#include "BitUtilities.h"
+#include "Instructions.h"
+
 template <typename T>
 constexpr auto Val(T v)
 {
 	return static_cast<std::underlying_type_t<T>>(v);
 }
-
-using byte = unsigned char;
-using word = unsigned short;
 
 using RAM = std::array<byte, 4069>;
 
@@ -50,43 +51,6 @@ word Fetch(RAM const& memory, word loc)
 	return firstByte << 8 | secondByte;
 }
 
-enum class AddressInstructionType
-{
-	// nnn - 12 bits
-	SYS, // 0nnn SYS  nnn			Jump to program at nnn. Not used.  
-	
-	JP,  // 1nnn JP   nnn			Jump. PC = nnn
-	CALL,// 2nnn CALL nnn			Call. ++SP = PC. PC = nnn.
-
-	LD,  // Annn LD   I    nnn		Load 12-bit nnn into I. I = nnn.
-	JPV, // Bnnn JP   V0   nnn		Jump to V0 + nnn. PC = V0 + nnn.
-};
-
-enum class SinglePosInstructionType
-{
-	// x - 4-bit value, low 4-bit of high byte of opcode
-
-	SHR, // 8x_6 SHR  Vx   1		Shift Vx right by 1 bit. VF = LSB(Vx). Vx >>= 1;
-	SHL, // 8x_E SHL  Vx   1		Shift Vx left by 1. VF = MSB(Vx). Vx <<= 1;
-
-	SKP, // Ex9E SKP  Vx			Skip next if key in Vx is pressed. if (key == Vx) PC += 2.
-	SKNP,// ExA1 SKPN Vx			Skip next if key in Vx is not pressed. if (key != Vx) PC += 2.
-	LDVD,// Fx07 LD	  Vx  DT		Load value in DT into Vx. Vx = DT.
-	LFVK,// Fx0A LD	  Vx  K			Block till key press. Then store key in Vx. Vx = key.
-	LDDV,// Fx15 LD   DT  Vx		Load value in Vx into DT. DT = Vx.
-	LDSV,// Fx18 LD	  ST  Vx		Load value in Vx into ST. ST = Vx.
-	ADDI,// Fx1E ADD  I   Vx		Add I and Vx. Store in I. I = I + Vx.
-	LDFV,// Fx29 LD	  F   Vx		Set I to location of hex sprite in Vx. I = Hex[Vx].data.
-
-	LDBV,// Fx33 LD	  B   Vx		Store BCD representation of Vx in location I, I+1, I+2.
-		 //							*I = ((Vx / 100) % 10). *(I + 1) = ((Vx / 10) % 10). *(I+2) = (Vx % 10).
-
-	LDIV,// Fx55 LD	  *I  Vx		Store V0 to Vx starting at location I.
-		 //							for (i in [0:x]) *I++ = V[i++]
-
-	LDVI,// Fx65 LD   Vx  *I		Read register V0 to Vx starting from I.
-		 //							for (i in [0:x]) V[i++] = *I++
-};
 
 enum class SinglePosDataInstructionType
 {
@@ -135,56 +99,6 @@ enum class NoParamInstructionType
 	RET, // 00EE RET				Return. PC = *SP. --SP.
 };
 
-byte GetHighNibble(byte b)
-{
-	return b >> 4;
-}
-
-constexpr word MaskBottom12Bit = 0b0000111111111111;
-word Get12BitParam(word opcode)
-{
-	return opcode & MaskBottom12Bit;
-}
-
-constexpr word MaskFirstParam = 0b0000111100000000;
-// Get x from _x__ opcode.
-byte GetFirstPosParam(word opcode)
-{
-	return (opcode & MaskFirstParam) >> 8;
-}
-
-constexpr word MaskSecondParam = 0b0000000011110000;
-// Get y from __y_ opcode
-byte GetSecondPosParam(word opcode)
-{
-	return (opcode & MaskSecondParam) >> 4;
-}
-
-// Get nn from ___nn opcode
-byte GetBottomByte(word opcode)
-{
-	return static_cast<byte>(opcode);
-}
-
-constexpr byte MaskBottomNibble = 0b00001111;
-// Get n from ____n opcode
-byte GetBottomNibble(word opcode)
-{
-	return (GetBottomByte(opcode) & MaskBottomNibble);
-}
-
-struct AddressInstruction
-{
-	AddressInstructionType Type;
-	byte Param;
-};
-
-struct SinglePosInstruction
-{
-	SinglePosDataInstructionType Type;
-	byte Pos;
-};
-
 struct SinglePosDataInstruction
 {
 	SinglePosDataInstructionType Type;
@@ -212,8 +126,14 @@ struct NoParamInstruction
 	NoParamInstructionType Type;
 };
 
-using Instruction = std::variant<NoParamInstruction, SinglePosInstruction, SinglePosDataInstruction,
-								 TwoPosInstruction, ThreeParamInstruction, AddressInstruction>;
+using Instruction = 
+	std::variant<NoParamInstruction, SinglePosInstruction, SinglePosDataInstruction,
+				 TwoPosInstruction, ThreeParamInstruction, AddressInstruction>;
+
+Instruction Decode(word opcode)
+{
+	// Read first nibble 
+}
 
 /// Execute one cycle
 void Tick()
