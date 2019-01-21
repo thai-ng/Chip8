@@ -41,5 +41,8 @@
     <ClInclude Include="SinglePosDataInstruction.h">
       <Filter>Header Files\Instructions</Filter>
     </ClInclude>
+    <ClInclude Include="TwoPosInstruction.h">
+      <Filter>Header Files\Instructions</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

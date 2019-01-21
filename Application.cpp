@@ -53,25 +53,6 @@ word Fetch(RAM const& memory, word loc)
 
 
 
-enum class TwoPosInstructionType
-{
-	// n - 4 bits
-	// x - 4-bit value, low 4-bit of high byte of opcode
-	// y - 4-bit value, high 4-bit of low byte of opcode
-	SEV, // 5xy0 SE   Vx   Vy		Skip next if Vx = Vy. if (Vx == Vy) PC += 2.
-
-	LDV, // 8xy0 LD   Vx   Vy		Store value of Vy in Vx. Vx = Vy.
-	OR,  // 8xy1 OR   Vx   Vy		Bitwise OR of Vx and Vy. Vx = (Vx | Vy)
-	AND, // 8xy2 AND  Vx   Vy		Bitwise AND of Vx and Vy. Vx = (Vx & Vy) 
-	XOR, // 8xy3 XOR  Vx   Vy		Bitwise XOR of Vx and Vy. Vx = (Vx ^ Vy)
-	ADDV,// 8xy4 ADD  Vx   Vy		Add Vx to Vy. Set VF if carry. 
-		 //							r = (Vx + Vy). VF = (r > max8bit) ? 1 : 0. Vx = trunc8bit(r)
-	SUBV,// 8xy5 SUB  Vx   Vy		Subtract Vy from Vx. Store in Vx. VF = NOT borrow
-		 //							VF = (Vx > Vy) ? 1 : 0. Vx = Vx - Vy
-	SUBN,// 8xy7 SUB  Vy   Vx		Subtract Vx from Vy. Store in Vx. VF = NOT borrow
-		 //							VF = (Vy > Vx) ? 1 : 0. Vx = Vy - Vx
-	SNEV,// 9xy0 SNE  Vx   Vy		Skip next if Vx = Vy. if (Vx == Vy) PC += 2;
-};
 
 enum class ThreeParamInstructionType
 {
@@ -84,13 +65,6 @@ enum class NoParamInstructionType
 {
 	CLS, // 00E0 CLS				Clear display
 	RET, // 00EE RET				Return. PC = *SP. --SP.
-};
-
-struct TwoPosInstruction
-{
-	TwoPosInstructionType Type;
-	byte First;
-	byte Second;
 };
 
 struct ThreeParamInstruction
