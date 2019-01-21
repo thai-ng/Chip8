@@ -12,6 +12,7 @@ enum class AddressInstructionType
 
 	LD,  // Annn LD   I    nnn		Load 12-bit nnn into I. I = nnn.
 	JPV, // Bnnn JP   V0   nnn		Jump to V0 + nnn. PC = V0 + nnn.
+	NOP
 };
 
 struct AddressInstruction
@@ -21,26 +22,17 @@ struct AddressInstruction
 		Param(Get12BitParam(opcode)) { }
 
 	AddressInstructionType Type;
-	byte Param;
+	word Param;
 
-	static bool IsInstruction(word opcode)
+	static bool 
+	IsInstruction(word opcode)
 	{
-		auto n = GetHighNibble(opcode);
-		switch (n)
-		{
-			case 0:
-			case 1:
-			case 2:
-			case 0xA:
-			case 0xB:
-				return true;
-			default:
-				return false;
-		}
+		return GetInstructionType(opcode) != AddressInstructionType::NOP;
 	}
 
 private:
-	static AddressInstructionType GetInstructionType(word opcode)
+	static AddressInstructionType 
+	GetInstructionType(word opcode)
 	{
 		auto n = GetHighNibble(opcode);
 		switch (n)
@@ -55,6 +47,8 @@ private:
 				return AddressInstructionType::LD;
 			case 0xB:
 				return AddressInstructionType::JPV;
+			default:
+				return AddressInstructionType::NOP;
 		}
 	}
 };

@@ -39,13 +39,15 @@ struct SinglePosInstruction
 	SinglePosInstructionType Type;
 	byte Pos;
 
-	static bool IsInstruction(word opcode)
+	static bool 
+	IsInstruction(word opcode)
 	{
 		return GetInstructionType(opcode) != SinglePosInstructionType::NOP;
 	}
 
 private:
-	static SinglePosInstructionType GetInstructionType(word opcode)
+	static SinglePosInstructionType 
+	GetInstructionType(word opcode)
 	{
 		auto t = GetHighNibble(opcode);
 		switch (t)
