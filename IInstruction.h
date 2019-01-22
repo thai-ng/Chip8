@@ -11,6 +11,7 @@ public:
 		return GetInstructionType_base(opcode) != InstructionType::NOP;
 	}
 
+private:
 	static InstructionType
 	GetInstructionType_base(word opcode)
 	{
