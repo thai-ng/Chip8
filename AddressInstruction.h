@@ -1,6 +1,7 @@
 #pragma once
 #include "PrimitiveTypes.h"
 #include "BitUtilities.h"
+#include "IInstruction.h"
 
 enum class AddressInstructionType
 {
@@ -15,7 +16,7 @@ enum class AddressInstructionType
 	NOP
 };
 
-struct AddressInstruction
+struct AddressInstruction : IInstruction<AddressInstruction, AddressInstructionType>
 {
 	AddressInstruction(word opcode) : 
 		Type(GetInstructionType(opcode)),
@@ -24,13 +25,6 @@ struct AddressInstruction
 	AddressInstructionType Type;
 	word Param;
 
-	static bool 
-	IsInstruction(word opcode)
-	{
-		return GetInstructionType(opcode) != AddressInstructionType::NOP;
-	}
-
-private:
 	static AddressInstructionType 
 	GetInstructionType(word opcode)
 	{

@@ -1,6 +1,7 @@
 #pragma once
 #include "PrimitiveTypes.h"
 #include "BitUtilities.h"
+#include "IInstruction.h"
 
 enum class SinglePosInstructionType
 {
@@ -30,7 +31,7 @@ enum class SinglePosInstructionType
 	NOP // No-op
 };
 
-struct SinglePosInstruction
+struct SinglePosInstruction : IInstruction<SinglePosInstruction, SinglePosInstructionType>
 {
 	SinglePosInstruction(word opcode) :
 		Type(GetInstructionType(opcode)),
@@ -39,13 +40,6 @@ struct SinglePosInstruction
 	SinglePosInstructionType Type;
 	byte Pos;
 
-	static bool 
-	IsInstruction(word opcode)
-	{
-		return GetInstructionType(opcode) != SinglePosInstructionType::NOP;
-	}
-
-private:
 	static SinglePosInstructionType 
 	GetInstructionType(word opcode)
 	{

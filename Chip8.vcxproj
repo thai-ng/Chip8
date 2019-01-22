@@ -143,10 +143,13 @@
   <ItemGroup>
     <ClInclude Include="AddressInstruction.h" />
     <ClInclude Include="BitUtilities.h" />
+    <ClInclude Include="IInstruction.h" />
     <ClInclude Include="Instructions.h" />
+    <ClInclude Include="NoParamInstruction.h" />
     <ClInclude Include="PrimitiveTypes.h" />
     <ClInclude Include="SinglePosDataInstruction.h" />
     <ClInclude Include="SinglePosInstruction.h" />
+    <ClInclude Include="ThreeParamInstruction.h" />
     <ClInclude Include="TwoPosInstruction.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -51,35 +51,6 @@ word Fetch(RAM const& memory, word loc)
 	return firstByte << 8 | secondByte;
 }
 
-
-
-
-enum class ThreeParamInstructionType
-{
-	DRW, // Dxyn DRW  Vx   Vy   n   Display n b-byte sprite starting at location I at (Vx, Vy). Set VF = collision
-		 //							Sprite data is XOR-ed with screen buffer. If erasing any pixel, VF = 1.
-		 //							Screen buffer wraps around.
-};
-
-enum class NoParamInstructionType
-{
-	CLS, // 00E0 CLS				Clear display
-	RET, // 00EE RET				Return. PC = *SP. --SP.
-};
-
-struct ThreeParamInstruction
-{
-	ThreeParamInstructionType Type;
-	byte First;
-	byte Second;
-	byte Third;
-};
-
-struct NoParamInstruction
-{
-	NoParamInstructionType Type;
-};
-
 using Instruction = 
 	std::variant<NoParamInstruction, SinglePosInstruction, SinglePosDataInstruction,
 				 TwoPosInstruction, ThreeParamInstruction, AddressInstruction>;
@@ -87,12 +58,32 @@ using Instruction =
 Instruction Decode(word opcode)
 {
 	// Read first nibble 
-	if (AddressInstruction::IsInstruction(opcode)) 
+	if (NoParamInstruction::IsInstruction(opcode))
+	{
+		return NoParamInstruction(opcode);
+	}
+	else if (AddressInstruction::IsInstruction(opcode)) 
 	{
 		return AddressInstruction(opcode);
+	} 
+	else if (SinglePosInstruction::IsInstruction(opcode))
+	{
+		return SinglePosInstruction(opcode);
+	}
+	else if (SinglePosDataInstruction::IsInstruction(opcode))
+	{
+		return SinglePosDataInstruction(opcode);
+	}
+	else if (TwoPosInstruction::IsInstruction(opcode))
+	{
+		return TwoPosInstruction(opcode);
+	}
+	else if (ThreeParamInstruction::IsInstruction(opcode))
+	{
+		return ThreeParamInstruction(opcode);
 	}
 
-	return AddressInstruction(opcode);
+	return NoParamInstruction(opcode);
 }
 
 /// Execute one cycle
@@ -101,7 +92,7 @@ void Tick()
 	auto opcode = Fetch(MainMemory, PC);
 
 	// Decode
-	Decode(opcode);
+	auto instruction = Decode(opcode);
 	// Execute
 
 	// Timer
