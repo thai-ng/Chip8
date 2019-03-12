@@ -80,30 +80,32 @@ template <typename... Ts> overloaded(Ts...) -> overloaded<Ts...>;
 
 constexpr int ProgramStart = 0x200;
 
+constexpr byte TestLSB(byte value)
+{
+	return value & 1;
+}
+
+template <typename T> 
+constexpr T GetMSB(T value)
+{
+	return value >> (sizeof(T) * 8);
+}
+
+constexpr byte TestMSB(byte value)
+{
+	return GetMSB(value) & 1;
+}
+
 class Chip8
 {
 public:
 	Chip8(std::string const& filename)
 	{
-		std::ifstream file(filename, std::fstream::binary | std::fstream::ate);
+		std::ifstream file(filename, std::fstream::binary);
 
 		if (file)
 		{
-			auto fileSize = file.tellg();
-			file.seekg(0, std::fstream::beg);
-			std::cout << "File size: " << fileSize << "\n";
-
 			file.read(reinterpret_cast<char*>(MainMemory.data() + ProgramStart), MainMemory.size() - ProgramStart);
-
-			if (file.gcount() == fileSize)
-			{
-				std::cout << "Read entire file\n";
-			}
-			else
-			{
-				std::cout << "error: only " << file.gcount() << " could be read\n";
-			}
-
 			PC = ProgramStart;
 		}
 		else
@@ -193,10 +195,34 @@ public:
 								{
 									std::cout << "PC: 0x" <<  std::hex << std::uppercase << PC << " SHR Instruction \n";
 									auto regValue = this->Registers[i.Pos];
-									this->Registers[Val(R::VF)] = regValue & 1;
+									this->Registers[Val(R::VF)] = TestLSB(regValue);
 									this->Registers[i.Pos] >>= 1;
 									this->PC += 2;
 								} break;
+
+								case (SinglePosInstructionType::SHL):
+								{
+									std::cout << "PC: 0x" << std::hex << std::uppercase << PC << " SHL Instruction \n";
+									auto regValue = this->Registers[i.Pos];
+									this->Registers[Val(R::VF)] = TestMSB(regValue);
+									this->Registers[i.Pos] <<= 1;
+									this->PC += 2;
+								} break;
+
+								case (SinglePosInstructionType::LDVD):
+								{
+									std::cout << "PC: 0x" << std::hex << std::uppercase << PC << " LDVD Instruction \n";
+									this->Registers[i.Pos] = this->Delay;
+									this->PC += 2;
+								} break;
+
+								case (SinglePosInstructionType::LDDV):
+								{
+									std::cout << "PC: 0x" << std::hex << std::uppercase << PC << " LDDV Instruction \n";
+									this->Delay = this->Registers[i.Pos];
+									this->PC += 2;
+								} break;
+
 								default:
 									break;
 							}
