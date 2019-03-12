@@ -53,5 +53,8 @@
     <ClInclude Include="NoParamInstruction.h">
       <Filter>Header Files\Instructions</Filter>
     </ClInclude>
+    <ClInclude Include="Chip8.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
